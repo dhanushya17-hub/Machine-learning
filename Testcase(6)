@@ -1,0 +1,21 @@
+import pandas as pd
+import numpy as np
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.inference import VariableElimination
+model = DiscreteBayesianNetwork([
+    ('StudyHours', 'Pass'),
+    ('Attendance', 'Pass')
+])
+data_dict = {
+    'StudyHours': np.random.choice(['Low', 'High'], 100, p=[0.4, 0.6]),
+    'Attendance': np.random.choice(['Low', 'High'], 100, p=[0.3, 0.7]),
+    'Pass': np.random.choice(['No', 'Yes'], 100, p=[0.4, 0.6])
+}
+df = pd.DataFrame(data_dict)
+model.fit(df, estimator=MaximumLikelihoodEstimator)
+inference = VariableElimination(model)
+evidence = {'StudyHours': 'High', 'Attendance': 'High'}
+result = inference.map_query(variables=['Pass'], evidence=evidence)
+print("\nPrediction for Student Outcome:")
+print(f"Pass: {result['Pass']}")
